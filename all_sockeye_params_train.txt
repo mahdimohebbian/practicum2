@@ -1,0 +1,547 @@
+usage: train.py [-h] [--config CONFIG] [--source SOURCE]
+                [--source-factors SOURCE_FACTORS [SOURCE_FACTORS ...]]
+                [--target TARGET] [--prepared-data PREPARED_DATA]
+                --validation-source VALIDATION_SOURCE
+                [--validation-source-factors VALIDATION_SOURCE_FACTORS [VALIDATION_SOURCE_FACTORS ...]]
+                --validation-target VALIDATION_TARGET [--no-bucketing]
+                [--bucket-width BUCKET_WIDTH] [--max-seq-len MAX_SEQ_LEN]
+                [--source-vocab SOURCE_VOCAB] [--target-vocab TARGET_VOCAB]
+                [--shared-vocab] [--num-words NUM_WORDS]
+                [--word-min-count WORD_MIN_COUNT]
+                [--pad-vocab-to-multiple-of PAD_VOCAB_TO_MULTIPLE_OF] --output
+                OUTPUT [--overwrite-output]
+                [--monitor-pattern MONITOR_PATTERN]
+                [--monitor-stat-func {mx_default,max,mean}] [--params PARAMS]
+                [--allow-missing-params]
+                [--encoder {rnn,rnn-with-conv-embed,transformer,transformer-with-conv-embed,cnn,image-pretrain-cnn}]
+                [--decoder {rnn,transformer,cnn}] [--num-layers NUM_LAYERS]
+                [--conv-embed-output-dim CONV_EMBED_OUTPUT_DIM]
+                [--conv-embed-max-filter-width CONV_EMBED_MAX_FILTER_WIDTH]
+                [--conv-embed-num-filters CONV_EMBED_NUM_FILTERS]
+                [--conv-embed-pool-stride CONV_EMBED_POOL_STRIDE]
+                [--conv-embed-num-highway-layers CONV_EMBED_NUM_HIGHWAY_LAYERS]
+                [--conv-embed-add-positional-encodings]
+                [--cnn-kernel-width CNN_KERNEL_WIDTH]
+                [--cnn-num-hidden CNN_NUM_HIDDEN]
+                [--cnn-activation-type {glu,relu,sigmoid,softrelu,tanh}]
+                [--cnn-positional-embedding-type {none,fixed,learned}]
+                [--cnn-project-qkv]
+                [--rnn-cell-type {lstm,lnlstm,lnglstm,gru,lngru,lnggru}]
+                [--rnn-num-hidden RNN_NUM_HIDDEN]
+                [--rnn-encoder-reverse-input]
+                [--rnn-decoder-state-init {zero,last,avg}]
+                [--rnn-residual-connections]
+                [--rnn-first-residual-layer RNN_FIRST_RESIDUAL_LAYER]
+                [--rnn-context-gating]
+                [--transformer-model-size TRANSFORMER_MODEL_SIZE]
+                [--transformer-attention-heads TRANSFORMER_ATTENTION_HEADS]
+                [--transformer-feed-forward-num-hidden TRANSFORMER_FEED_FORWARD_NUM_HIDDEN]
+                [--transformer-activation-type {gelu,relu,swish1}]
+                [--transformer-positional-embedding-type {none,fixed,learned}]
+                [--transformer-preprocess TRANSFORMER_PREPROCESS]
+                [--transformer-postprocess TRANSFORMER_POSTPROCESS]
+                [--lhuc COMPONENT [COMPONENT ...]] [--num-embed NUM_EMBED]
+                [--source-factors-num-embed SOURCE_FACTORS_NUM_EMBED [SOURCE_FACTORS_NUM_EMBED ...]]
+                [--rnn-attention-type {bilinear,dot,mhdot,fixed,location,mlp,coverage}]
+                [--rnn-attention-num-hidden RNN_ATTENTION_NUM_HIDDEN]
+                [--rnn-attention-use-prev-word] [--rnn-scale-dot-attention]
+                [--rnn-attention-coverage-type {tanh,sigmoid,relu,softrelu,gru,count}]
+                [--rnn-attention-coverage-num-hidden RNN_ATTENTION_COVERAGE_NUM_HIDDEN]
+                [--rnn-attention-in-upper-layers]
+                [--rnn-attention-mhdot-heads RNN_ATTENTION_MHDOT_HEADS]
+                [--weight-tying]
+                [--weight-tying-type {src_trg_softmax,src_trg,trg_softmax}]
+                [--layer-normalization] [--weight-normalization]
+                [--decoder-only] [--batch-size BATCH_SIZE]
+                [--batch-type {sentence,word}] [--loss {cross-entropy}]
+                [--label-smoothing LABEL_SMOOTHING]
+                [--loss-normalization-type {valid,batch}]
+                [--metrics {perplexity,accuracy} [{perplexity,accuracy} ...]]
+                [--optimized-metric {perplexity,accuracy,bleu,chrf,rouge1}]
+                [--min-updates MIN_UPDATES] [--max-updates MAX_UPDATES]
+                [--min-samples MIN_SAMPLES] [--max-samples MAX_SAMPLES]
+                [--checkpoint-frequency CHECKPOINT_FREQUENCY]
+                [--max-num-checkpoint-not-improved MAX_NUM_CHECKPOINT_NOT_IMPROVED]
+                [--min-num-epochs MIN_NUM_EPOCHS]
+                [--max-num-epochs MAX_NUM_EPOCHS]
+                [--embed-dropout EMBED_DROPOUT]
+                [--rnn-dropout-inputs RNN_DROPOUT_INPUTS]
+                [--rnn-dropout-states RNN_DROPOUT_STATES]
+                [--rnn-dropout-recurrent RNN_DROPOUT_RECURRENT]
+                [--rnn-enc-last-hidden-concat-to-embedding]
+                [--rnn-decoder-hidden-dropout RNN_DECODER_HIDDEN_DROPOUT]
+                [--transformer-dropout-attention TRANSFORMER_DROPOUT_ATTENTION]
+                [--transformer-dropout-act TRANSFORMER_DROPOUT_ACT]
+                [--transformer-dropout-prepost TRANSFORMER_DROPOUT_PREPOST]
+                [--conv-embed-dropout CONV_EMBED_DROPOUT]
+                [--cnn-hidden-dropout CNN_HIDDEN_DROPOUT]
+                [--optimizer {adam,eve,nadam,rmsprop,sgd,nag,adagrad,adadelta}]
+                [--optimizer-params OPTIMIZER_PARAMS]
+                [--kvstore {device,local,dist_sync,dist_device_sync,dist_async,nccl}]
+                [--gradient-compression-type {none,2bit}]
+                [--gradient-compression-threshold GRADIENT_COMPRESSION_THRESHOLD]
+                [--weight-init {xavier,uniform}]
+                [--weight-init-scale WEIGHT_INIT_SCALE]
+                [--weight-init-xavier-factor-type {in,out,avg}]
+                [--weight-init-xavier-rand-type {uniform,gaussian}]
+                [--embed-weight-init {default,normal}]
+                [--initial-learning-rate INITIAL_LEARNING_RATE]
+                [--weight-decay WEIGHT_DECAY] [--momentum MOMENTUM]
+                [--gradient-clipping-threshold GRADIENT_CLIPPING_THRESHOLD]
+                [--gradient-clipping-type {abs,norm,none}]
+                [--learning-rate-scheduler-type {fixed-rate-inv-sqrt-t,fixed-rate-inv-t,fixed-step,plateau-reduce}]
+                [--learning-rate-reduce-factor LEARNING_RATE_REDUCE_FACTOR]
+                [--learning-rate-reduce-num-not-improved LEARNING_RATE_REDUCE_NUM_NOT_IMPROVED]
+                [--learning-rate-schedule LEARNING_RATE_SCHEDULE]
+                [--learning-rate-half-life LEARNING_RATE_HALF_LIFE]
+                [--learning-rate-warmup LEARNING_RATE_WARMUP]
+                [--learning-rate-decay-param-reset]
+                [--learning-rate-decay-optimizer-states-reset {off,initial,best}]
+                [--rnn-forget-bias RNN_FORGET_BIAS]
+                [--rnn-h2h-init {orthogonal,orthogonal_stacked,default}]
+                [--fixed-param-names [FIXED_PARAM_NAMES [FIXED_PARAM_NAMES ...]]]
+                [--decode-and-evaluate DECODE_AND_EVALUATE]
+                [--decode-and-evaluate-use-cpu]
+                [--decode-and-evaluate-device-id DECODE_AND_EVALUATE_DEVICE_ID]
+                [--seed SEED] [--keep-last-params KEEP_LAST_PARAMS]
+                [--dry-run] [--device-ids DEVICE_IDS [DEVICE_IDS ...]]
+                [--use-cpu] [--disable-device-locking] [--lock-dir LOCK_DIR]
+                [--quiet]
+
+Train Sockeye sequence-to-sequence models.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --config CONFIG       Config file in YAML format.
+
+Data & I/O:
+  --source SOURCE, -s SOURCE
+                        Source side of parallel training data.
+  --source-factors SOURCE_FACTORS [SOURCE_FACTORS ...], -sf SOURCE_FACTORS [SOURCE_FACTORS ...]
+                        File(s) containing additional token-parallel source
+                        side factors. Default: [].
+  --target TARGET, -t TARGET
+                        Target side of parallel training data.
+  --prepared-data PREPARED_DATA, -d PREPARED_DATA
+                        Prepared training data directory created through
+                        python -m sockeye.prepare_data.
+  --validation-source VALIDATION_SOURCE, -vs VALIDATION_SOURCE
+                        Source side of validation data.
+  --validation-source-factors VALIDATION_SOURCE_FACTORS [VALIDATION_SOURCE_FACTORS ...], -vsf VALIDATION_SOURCE_FACTORS [VALIDATION_SOURCE_FACTORS ...]
+                        File(s) containing additional token-parallel
+                        validation source side factors. Default: [].
+  --validation-target VALIDATION_TARGET, -vt VALIDATION_TARGET
+                        Target side of validation data.
+  --no-bucketing        Disable bucketing: always unroll the graph to --max-
+                        seq-len. Default: False.
+  --bucket-width BUCKET_WIDTH
+                        Width of buckets in tokens. Default: 10.
+  --max-seq-len MAX_SEQ_LEN
+                        Maximum sequence length in tokens.Use "x:x" to specify
+                        separate values for src&tgt. Default: (99, 99).
+  --source-vocab SOURCE_VOCAB
+                        Existing source vocabulary (JSON).
+  --target-vocab TARGET_VOCAB
+                        Existing target vocabulary (JSON).
+  --shared-vocab        Share source and target vocabulary. Will be
+                        automatically turned on when using weight tying.
+                        Default: False.
+  --num-words NUM_WORDS
+                        Maximum vocabulary size. Use "x:x" to specify separate
+                        values for src&tgt. A value of 0 indicates that the
+                        vocabulary unrestricted and determined from the data
+                        by creating an entry for all words that occur at least
+                        --word-min-count times.Default: (0, 0).
+  --word-min-count WORD_MIN_COUNT
+                        Minimum frequency of words to be included in
+                        vocabularies. Default: (1, 1).
+  --pad-vocab-to-multiple-of PAD_VOCAB_TO_MULTIPLE_OF
+                        Pad vocabulary to a multiple of this integer. Default:
+                        None.
+  --output OUTPUT, -o OUTPUT
+                        Folder where model & training results are written to.
+  --overwrite-output    Delete all contents of the model directory if it
+                        already exists.
+  --monitor-pattern MONITOR_PATTERN
+                        Pattern to match outputs/weights/gradients to monitor.
+                        '.*' monitors everything. Default: None.
+  --monitor-stat-func {mx_default,max,mean}
+                        Statistics function to run on monitored
+                        outputs/weights/gradients. Default: mx_default.
+
+ModelConfig:
+  --params PARAMS, -p PARAMS
+                        Initialize model parameters from file. Overrides
+                        random initializations.
+  --allow-missing-params
+                        Allow missing parameters when initializing model
+                        parameters from file. Default: False.
+  --encoder {rnn,rnn-with-conv-embed,transformer,transformer-with-conv-embed,cnn,image-pretrain-cnn}
+                        Type of encoder. Default: transformer.
+  --decoder {rnn,transformer,cnn}
+                        Type of encoder. Default: transformer.
+  --num-layers NUM_LAYERS
+                        Number of layers for encoder & decoder. Use "x:x" to
+                        specify separate values for encoder & decoder.
+                        Default: (6, 6).
+  --conv-embed-output-dim CONV_EMBED_OUTPUT_DIM
+                        Project segment embeddings to this size for
+                        ConvolutionalEmbeddingEncoder. Omit to avoid
+                        projection, leaving segment embeddings total size of
+                        all filters. Default: None.
+  --conv-embed-max-filter-width CONV_EMBED_MAX_FILTER_WIDTH
+                        Maximum filter width for
+                        ConvolutionalEmbeddingEncoder. Default: 8.
+  --conv-embed-num-filters CONV_EMBED_NUM_FILTERS
+                        List of number of filters of each width 1..max for
+                        ConvolutionalEmbeddingEncoder. Default: (200, 200,
+                        250, 250, 300, 300, 300, 300).
+  --conv-embed-pool-stride CONV_EMBED_POOL_STRIDE
+                        Pooling stride for ConvolutionalEmbeddingEncoder.
+                        Default: 5.
+  --conv-embed-num-highway-layers CONV_EMBED_NUM_HIGHWAY_LAYERS
+                        Number of highway layers for
+                        ConvolutionalEmbeddingEncoder. Default: 4.
+  --conv-embed-add-positional-encodings
+                        Add positional encodings to final segment embeddings
+                        for ConvolutionalEmbeddingEncoder. Default: False.
+  --cnn-kernel-width CNN_KERNEL_WIDTH
+                        Kernel width of the convolutional encoder and decoder.
+                        Default: (3, 3).
+  --cnn-num-hidden CNN_NUM_HIDDEN
+                        Number of hidden units for the convolutional encoder
+                        and decoder. Default: 512.
+  --cnn-activation-type {glu,relu,sigmoid,softrelu,tanh}
+                        Type activation to use for each convolutional layer.
+                        Default: glu.
+  --cnn-positional-embedding-type {none,fixed,learned}
+                        The type of positional embedding. Default: learned.
+  --cnn-project-qkv     Optionally apply query, key and value projections to
+                        the source and target hidden vectors before applying
+                        the attention mechanism.
+  --rnn-cell-type {lstm,lnlstm,lnglstm,gru,lngru,lnggru}
+                        RNN cell type for encoder and decoder. Default: lstm.
+  --rnn-num-hidden RNN_NUM_HIDDEN
+                        Number of RNN hidden units for encoder and decoder.
+                        Default: 1024.
+  --rnn-encoder-reverse-input
+                        Reverse input sequence for RNN encoder. Default:
+                        False.
+  --rnn-decoder-state-init {zero,last,avg}
+                        How to initialize RNN decoder states. Default: last.
+  --rnn-residual-connections
+                        Add residual connections to stacked RNNs. (see Wu
+                        ETAL'16). Default: False.
+  --rnn-first-residual-layer RNN_FIRST_RESIDUAL_LAYER
+                        First RNN layer to have a residual connection.
+                        Default: 2.
+  --rnn-context-gating  Enables a context gate which adaptively weighs the RNN
+                        decoder input against the source context vector before
+                        each update of the decoder hidden state.
+  --transformer-model-size TRANSFORMER_MODEL_SIZE
+                        Number of hidden units in transformer layers. Use
+                        "x:x" to specify separate values for encoder &
+                        decoder. Default: (512, 512).
+  --transformer-attention-heads TRANSFORMER_ATTENTION_HEADS
+                        Number of heads for all self-attention when using
+                        transformer layers. Use "x:x" to specify separate
+                        values for encoder & decoder. Default: (8, 8).
+  --transformer-feed-forward-num-hidden TRANSFORMER_FEED_FORWARD_NUM_HIDDEN
+                        Number of hidden units in transformers feed forward
+                        layers. Use "x:x" to specify separate values for
+                        encoder & decoder. Default: (2048, 2048).
+  --transformer-activation-type {gelu,relu,swish1}
+                        Type activation to use for each feed forward layer.
+                        Default: relu.
+  --transformer-positional-embedding-type {none,fixed,learned}
+                        The type of positional embedding. Default: fixed.
+  --transformer-preprocess TRANSFORMER_PREPROCESS
+                        Transformer preprocess sequence for encoder and
+                        decoder. Supports three types of operations:
+                        d=dropout, r=residual connection, n=layer
+                        normalization. You can combine in any order, for
+                        example: "ndr". Leave empty to not use any of these
+                        operations. You can specify separate sequences for
+                        encoder and decoder by separating with ":" For
+                        example: n:drn Default: ('n', 'n').
+  --transformer-postprocess TRANSFORMER_POSTPROCESS
+                        Transformer postprocess sequence for encoder and
+                        decoder. Supports three types of operations:
+                        d=dropout, r=residual connection, n=layer
+                        normalization. You can combine in any order, for
+                        example: "ndr". Leave empty to not use any of these
+                        operations. You can specify separate sequences for
+                        encoder and decoder by separating with ":" For
+                        example: n:drn Default: ('dr', 'dr').
+  --lhuc COMPONENT [COMPONENT ...]
+                        Use LHUC (Vilar 2018). Include an amplitude parameter
+                        to hidden units for domain adaptation. Needs a pre-
+                        trained model. Valid values: encoder, decoder,
+                        state_init, all. Currently not supported for
+                        convolutional models. Default: None.
+  --num-embed NUM_EMBED
+                        Embedding size for source and target tokens. Use "x:x"
+                        to specify separate values for src&tgt. Default: (512,
+                        512).
+  --source-factors-num-embed SOURCE_FACTORS_NUM_EMBED [SOURCE_FACTORS_NUM_EMBED ...]
+                        Embedding size for additional source factors. You must
+                        provide as many dimensions as (validation) source
+                        factor files. Default: [].
+  --rnn-attention-type {bilinear,dot,mhdot,fixed,location,mlp,coverage}
+                        Attention model for RNN decoders. Choices: {bilinear,
+                        dot, mhdot, fixed, location, mlp, coverage}. Default:
+                        mlp.
+  --rnn-attention-num-hidden RNN_ATTENTION_NUM_HIDDEN
+                        Number of hidden units for attention layers. Default:
+                        equal to --rnn-num-hidden.
+  --rnn-attention-use-prev-word
+                        Feed the previous target embedding into the attention
+                        mechanism.
+  --rnn-scale-dot-attention
+                        Optional scale before dot product. Only applicable to
+                        'dot' attention type. [Vaswani et al, 2017]
+  --rnn-attention-coverage-type {tanh,sigmoid,relu,softrelu,gru,count}
+                        Type of model for updating coverage vectors. 'count'
+                        refers to an update method that accumulates attention
+                        scores. 'tanh', 'sigmoid', 'relu', 'softrelu' use non-
+                        linear layers with the respective activation type, and
+                        'gru' uses a GRU to update the coverage vectors.
+                        Default: count.
+  --rnn-attention-coverage-num-hidden RNN_ATTENTION_COVERAGE_NUM_HIDDEN
+                        Number of hidden units for coverage vectors. Default:
+                        1.
+  --rnn-attention-in-upper-layers
+                        Pass the attention to the upper layers of the RNN
+                        decoder, similar to GNMT paper. Only applicable if
+                        more than one layer is used.
+  --rnn-attention-mhdot-heads RNN_ATTENTION_MHDOT_HEADS
+                        Number of heads for Multi-head dot attention. Default:
+                        None.
+  --weight-tying        Turn on weight tying (see arxiv.org/abs/1608.05859).
+                        The type of weight sharing is determined through
+                        --weight-tying-type. Default: False.
+  --weight-tying-type {src_trg_softmax,src_trg,trg_softmax}
+                        The type of weight tying. source embeddings=src,
+                        target embeddings=trg, target softmax weight
+                        matrix=softmax. Default: trg_softmax.
+  --layer-normalization
+                        Adds layer normalization before non-linear
+                        activations. This includes MLP attention, RNN decoder
+                        state initialization, RNN decoder hidden state, and
+                        cnn layers.It does not normalize RNN cell activations
+                        (this can be done using the 'lnlstm' or 'lnglstm' rnn-
+                        cell-type.
+  --weight-normalization
+                        Adds weight normalization to decoder output layers
+                        (and all convolutional weight matrices for CNN
+                        decoders). Default: False.
+
+Training parameters:
+  --decoder-only        Pre-train a decoder. This is currently for RNN
+                        decoders only. Default: False.
+  --batch-size BATCH_SIZE, -b BATCH_SIZE
+                        Mini-batch size. Note that depending on the batch-type
+                        this either refers to words or sentences.Sentence:
+                        each batch contains X sentences, number of words
+                        varies. Word: each batch contains (approximately) X
+                        words, number of sentences varies. Default: 4096.
+  --batch-type {sentence,word}
+                        Sentence: each batch contains X sentences, number of
+                        words varies.Word: each batch contains (approximately)
+                        X target words, number of sentences varies. Default:
+                        word.
+  --loss {cross-entropy}
+                        Loss to optimize. Default: cross-entropy.
+  --label-smoothing LABEL_SMOOTHING
+                        Smoothing constant for label smoothing. Default: 0.1.
+  --loss-normalization-type {valid,batch}
+                        How to normalize the loss. By default loss is
+                        normalized by the number of valid (non-PAD) tokens
+                        (valid).
+  --metrics {perplexity,accuracy} [{perplexity,accuracy} ...]
+                        Names of metrics to track on training and validation
+                        data. Default: ['perplexity'].
+  --optimized-metric {perplexity,accuracy,bleu,chrf,rouge1}
+                        Metric to optimize with early stopping {perplexity,
+                        accuracy, bleu, chrf, rouge1}. Default: perplexity.
+  --min-updates MIN_UPDATES
+                        Minimum number of updates before training can stop.
+                        Default: None.
+  --max-updates MAX_UPDATES
+                        Maximum number of updates. Default: None.
+  --min-samples MIN_SAMPLES
+                        Minimum number of samples before training can stop.
+                        Default: None.
+  --max-samples MAX_SAMPLES
+                        Maximum number of samples. Default: None.
+  --checkpoint-frequency CHECKPOINT_FREQUENCY
+                        Checkpoint and evaluate every x updates/batches.
+                        Default: 4000.
+  --max-num-checkpoint-not-improved MAX_NUM_CHECKPOINT_NOT_IMPROVED
+                        Maximum number of checkpoints the model is allowed to
+                        not improve in <optimized-metric> on validation data
+                        before training is stopped. Default: 32.
+  --min-num-epochs MIN_NUM_EPOCHS
+                        Minimum number of epochs (passes through the training
+                        data) before training can stop. Default: None.
+  --max-num-epochs MAX_NUM_EPOCHS
+                        Maximum number of epochs (passes through the training
+                        data) Default: None.
+  --embed-dropout EMBED_DROPOUT
+                        Dropout probability for source & target embeddings.
+                        Use "x:x" to specify separate values. Default: (0.0,
+                        0.0).
+  --rnn-dropout-inputs RNN_DROPOUT_INPUTS
+                        RNN variational dropout probability for encoder &
+                        decoder RNN inputs. (Gal, 2015)Use "x:x" to specify
+                        separate values. Default: (0.0, 0.0).
+  --rnn-dropout-states RNN_DROPOUT_STATES
+                        RNN variational dropout probability for encoder &
+                        decoder RNN states. (Gal, 2015)Use "x:x" to specify
+                        separate values. Default: (0.0, 0.0).
+  --rnn-dropout-recurrent RNN_DROPOUT_RECURRENT
+                        Recurrent dropout without memory loss (Semeniuta,
+                        2016) for encoder & decoder LSTMs. Use "x:x" to
+                        specify separate values. Default: (0.0, 0.0).
+  --rnn-enc-last-hidden-concat-to-embedding
+                        Concatenate the last hidden layer of the encoder to
+                        the input of the decoder, instead of the previous
+                        state of the decoder. Default: False.
+  --rnn-decoder-hidden-dropout RNN_DECODER_HIDDEN_DROPOUT
+                        Dropout probability for hidden state that combines the
+                        context with the RNN hidden state in the decoder.
+                        Default: 0.2.
+  --transformer-dropout-attention TRANSFORMER_DROPOUT_ATTENTION
+                        Dropout probability for multi-head attention. Default:
+                        0.1.
+  --transformer-dropout-act TRANSFORMER_DROPOUT_ACT
+                        Dropout probability before activation in feed-forward
+                        block. Default: 0.1.
+  --transformer-dropout-prepost TRANSFORMER_DROPOUT_PREPOST
+                        Dropout probability for pre/postprocessing blocks.
+                        Default: 0.1.
+  --conv-embed-dropout CONV_EMBED_DROPOUT
+                        Dropout probability for ConvolutionalEmbeddingEncoder.
+                        Default: 0.0.
+  --cnn-hidden-dropout CNN_HIDDEN_DROPOUT
+                        Dropout probability for dropout between convolutional
+                        layers. Default: 0.2.
+  --optimizer {adam,eve,nadam,rmsprop,sgd,nag,adagrad,adadelta}
+                        SGD update rule. Default: adam.
+  --optimizer-params OPTIMIZER_PARAMS
+                        Additional optimizer params as dictionary. Format:
+                        key1:value1,key2:value2,...
+  --kvstore {device,local,dist_sync,dist_device_sync,dist_async,nccl}
+                        The MXNet kvstore to use. 'device' is recommended for
+                        single process training. Use any of 'dist_sync',
+                        'dist_device_sync' and 'dist_async' for distributed
+                        training. Default: device.
+  --gradient-compression-type {none,2bit}
+                        Type of gradient compression to use. Default: None.
+  --gradient-compression-threshold GRADIENT_COMPRESSION_THRESHOLD
+                        Threshold for gradient compression if --gctype is
+                        '2bit'. Default: 0.5.
+  --weight-init {xavier,uniform}
+                        Type of base weight initialization. Default: xavier.
+  --weight-init-scale WEIGHT_INIT_SCALE
+                        Weight initialization scale. Applies to uniform
+                        (scale) and xavier (magnitude). Default: 3.0.
+  --weight-init-xavier-factor-type {in,out,avg}
+                        Xavier factor type. Default: avg.
+  --weight-init-xavier-rand-type {uniform,gaussian}
+                        Xavier random number generator type. Default: uniform.
+  --embed-weight-init {default,normal}
+                        Type of embedding matrix weight initialization. If
+                        normal, initializes embedding weights using a normal
+                        distribution with std=1/srqt(vocab_size). Default:
+                        default.
+  --initial-learning-rate INITIAL_LEARNING_RATE
+                        Initial learning rate. Default: 0.0002.
+  --weight-decay WEIGHT_DECAY
+                        Weight decay constant. Default: 0.0.
+  --momentum MOMENTUM   Momentum constant. Default: None.
+  --gradient-clipping-threshold GRADIENT_CLIPPING_THRESHOLD
+                        Clip absolute gradients values greater than this
+                        value. Set to negative to disable. Default: 1.0.
+  --gradient-clipping-type {abs,norm,none}
+                        The type of gradient clipping. Default: none.
+  --learning-rate-scheduler-type {fixed-rate-inv-sqrt-t,fixed-rate-inv-t,fixed-step,plateau-reduce}
+                        Learning rate scheduler type. Default: plateau-reduce.
+  --learning-rate-reduce-factor LEARNING_RATE_REDUCE_FACTOR
+                        Factor to multiply learning rate with (for 'plateau-
+                        reduce' learning rate scheduler). Default: 0.7.
+  --learning-rate-reduce-num-not-improved LEARNING_RATE_REDUCE_NUM_NOT_IMPROVED
+                        For 'plateau-reduce' learning rate scheduler. Adjust
+                        learning rate if <optimized-metric> did not improve
+                        for x checkpoints. Default: 8.
+  --learning-rate-schedule LEARNING_RATE_SCHEDULE
+                        For 'fixed-step' scheduler. Fully specified learning
+                        schedule in the form
+                        "rate1:num_updates1[,rate2:num_updates2,...]".
+                        Overrides all other args related to learning rate and
+                        stopping conditions. Default: None.
+  --learning-rate-half-life LEARNING_RATE_HALF_LIFE
+                        Half-life of learning rate in checkpoints. For 'fixed-
+                        rate-*' learning rate schedulers. Default: 10.
+  --learning-rate-warmup LEARNING_RATE_WARMUP
+                        Number of warmup steps. If set to x, linearly
+                        increases learning rate from 10% to 100% of the
+                        initial learning rate. Default: 0.
+  --learning-rate-decay-param-reset
+                        Resets model parameters to current best when learning
+                        rate is reduced due to the value of --learning-rate-
+                        reduce-num-not-improved. Default: False.
+  --learning-rate-decay-optimizer-states-reset {off,initial,best}
+                        Action to take on optimizer states (e.g. Adam states)
+                        when learning rate is reduced due to the value of
+                        --learning-rate-reduce-num-not-improved. Default: off.
+  --rnn-forget-bias RNN_FORGET_BIAS
+                        Initial value of RNN forget biases.
+  --rnn-h2h-init {orthogonal,orthogonal_stacked,default}
+                        Initialization method for RNN parameters. Default:
+                        orthogonal.
+  --fixed-param-names [FIXED_PARAM_NAMES [FIXED_PARAM_NAMES ...]]
+                        Names of parameters to fix at training time. Default:
+                        [].
+  --decode-and-evaluate DECODE_AND_EVALUATE
+                        x>0: decode x sampled sentences from validation data
+                        and compute evaluation metrics. x==-1: use full
+                        validation data. Default: 500.
+  --decode-and-evaluate-use-cpu
+                        Use CPU for decoding validation data. Overrides
+                        --decode-and-evaluate-device-id. Default: False.
+  --decode-and-evaluate-device-id DECODE_AND_EVALUATE_DEVICE_ID
+                        Separate device for decoding validation data. Use a
+                        negative number to automatically acquire a GPU. Use a
+                        positive number to acquire a specific GPU. Default:
+                        None.
+  --seed SEED           Random seed. Default: 13.
+  --keep-last-params KEEP_LAST_PARAMS
+                        Keep only the last n params files, use -1 to keep all
+                        files. Default: -1
+  --dry-run             Do not perform any actual training, but print
+                        statistics about the model and mode of operation.
+
+Device parameters:
+  --device-ids DEVICE_IDS [DEVICE_IDS ...]
+                        List or number of GPUs ids to use. Default: [-1]. Use
+                        negative numbers to automatically acquire a certain
+                        number of GPUs, e.g. -5 will find 5 free GPUs. Use
+                        positive numbers to acquire a specific GPU id on this
+                        host. (Note that automatic acquisition of GPUs assumes
+                        that all GPU processes on this host are using
+                        automatic sockeye GPU acquisition).
+  --use-cpu             Use CPU device instead of GPU.
+  --disable-device-locking
+                        Just use the specified device ids without locking.
+  --lock-dir LOCK_DIR   When acquiring a GPU we do file based locking so that
+                        only one Sockeye process can run on the a GPU. This is
+                        the folder in which we store the file locks. For
+                        locking to work correctly it is assumed all processes
+                        use the same lock directory. The only requirement for
+                        the directory are file write permissions.
+
+Logging:
+  --quiet, -q           Suppress console logging.
+
+
