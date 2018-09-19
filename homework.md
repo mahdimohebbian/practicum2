@@ -43,7 +43,7 @@ Trainig params:
 4.  minimum number of epochs is 3
 5.  3 checkpoints per epoch
 6.  early stopping if model did not improve for 4 checkpoints
-7.  evaluate 2 times per epoch
+7.  evaluate 3 times per epoch
 ```
 
 Note: some specs above can be set directly, some need calculations. It is your task to figure out details.
